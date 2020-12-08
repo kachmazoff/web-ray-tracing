@@ -1,0 +1,19 @@
+{
+  "name": "web-ray-tracing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kachmazoff/web-ray-tracing.git"
+  },
+  "author": "kachmazoff",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kachmazoff/web-ray-tracing/issues"
+  },
+  "homepage": "https://github.com/kachmazoff/web-ray-tracing#readme"
+}
