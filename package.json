@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/kachmazoff/web-ray-tracing/issues"
   },
-  "homepage": "https://github.com/kachmazoff/web-ray-tracing#readme"
+  "homepage": "https://github.com/kachmazoff/web-ray-tracing#readme",
+  "devDependencies": {
+    "html-webpack-plugin": "^4.5.0",
+    "webpack": "^5.10.0",
+    "webpack-cli": "^4.2.0",
+    "webpack-dev-server": "^3.11.0"
+  }
 }
