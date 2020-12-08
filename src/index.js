@@ -1,21 +1,22 @@
 import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper } from "three";
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 
-let renderer = new WebGLRenderer({antialias:true});
+let renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(WIDTH, HEIGHT);
 renderer.setClearColor("#e5e5e5");
 document.body.appendChild(renderer.domElement);
 
 let scene = new Scene();
 
-let camera = new PerspectiveCamera(70, WIDTH/HEIGHT);
+let camera = new PerspectiveCamera(70, WIDTH / HEIGHT);
 camera.position.z = 50;
 scene.add(camera);
 
 var boxGeometry = new BoxGeometry(10, 10, 10);
-var basicMaterial = new MeshLambertMaterial({color: 0x0095DD});
+var basicMaterial = new MeshLambertMaterial({ color: 0x0095DD });
 var cube = new Mesh(boxGeometry, basicMaterial);
 scene.add(cube);
 cube.rotation.set(0.4, 0.2, 0);
@@ -42,8 +43,8 @@ scene.add(sphere)
 const size = 50;
 const divisions = 10;
 
-const gridHelper = new GridHelper( size, divisions );
-scene.add( gridHelper );
+const gridHelper = new GridHelper(size, divisions);
+scene.add(gridHelper);
 
 console.log('scene.children', scene.children)
 camera.rotateX(-0.6)
@@ -52,17 +53,36 @@ camera.translateZ(20)
 
 function createControls() {
 
-    let controls = new TrackballControls( camera, renderer.domElement );
+    let controls = new TrackballControls(camera, renderer.domElement);
 
     controls.rotateSpeed = 1.0;
     controls.zoomSpeed = 1.2;
     controls.panSpeed = 0.8;
 
-    controls.keys = [ 65, 83, 68 ];
+    controls.keys = [65, 83, 68];
 
     return controls;
 }
-const controls = createControls();
+
+function createOrbitControl() {
+    const controls = new OrbitControls(camera, renderer.domElement);
+
+    //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+
+    controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    controls.dampingFactor = 0.05;
+
+    controls.screenSpacePanning = false;
+
+    controls.minDistance = 10;
+    controls.maxDistance = 200;
+
+    controls.maxPolarAngle = Math.PI;
+
+    return controls
+}
+
+const controls = createOrbitControl();
 
 function render() {
     requestAnimationFrame(render);
