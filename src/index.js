@@ -1,4 +1,4 @@
-import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight } from "three";
+import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper } from "three";
 
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
@@ -25,6 +25,30 @@ var light = new PointLight(0xFFFFFF);
 light.position.set(-10, 0, 50);
 scene.add(light);
 
+function generateSphere(radius, { detalization, color }) {
+    detalization = detalization || 20;
+
+    const shereGeometry = new SphereGeometry(radius, detalization, detalization);
+    const sphereMaterial = new MeshLambertMaterial({ color: color });
+    const sphere = new Mesh(shereGeometry, sphereMaterial);
+
+    return sphere;
+}
+
+const sphere = generateSphere(5, { color: "#909000" })
+sphere.position.set(-10, 10, 5);
+scene.add(sphere)
+
+const size = 50;
+const divisions = 10;
+
+const gridHelper = new GridHelper( size, divisions );
+scene.add( gridHelper );
+
+console.log('scene.children', scene.children)
+camera.rotateX(-0.6)
+camera.translateY(20)
+camera.translateZ(20)
 function render() {
     requestAnimationFrame(render);
     renderer.render(scene, camera);
