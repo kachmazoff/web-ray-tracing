@@ -1,5 +1,5 @@
 import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper } from "three";
-
+import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 
@@ -49,8 +49,24 @@ console.log('scene.children', scene.children)
 camera.rotateX(-0.6)
 camera.translateY(20)
 camera.translateZ(20)
+
+function createControls() {
+
+    let controls = new TrackballControls( camera, renderer.domElement );
+
+    controls.rotateSpeed = 1.0;
+    controls.zoomSpeed = 1.2;
+    controls.panSpeed = 0.8;
+
+    controls.keys = [ 65, 83, 68 ];
+
+    return controls;
+}
+const controls = createControls();
+
 function render() {
     requestAnimationFrame(render);
     renderer.render(scene, camera);
+    controls.update();
 }
 render();
