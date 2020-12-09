@@ -1,9 +1,10 @@
-import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments } from "three";
+import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments, Vector2, Raycaster, CircleGeometry } from "three";
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Ray } from "./Ray";
 import { Sphere } from "./Sphere";
 import { vectorMinus } from "./utils/math";
+import { generateRays } from "./Rays";
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 
@@ -125,6 +126,86 @@ if (intersectInfo.intersect) {
     const dot = new Points( dotGeometry, dotMaterial );
     scene.add( dot );
 }
+
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+
+const cursorGeometry = new Geometry();
+cursorGeometry.vertices.push(new Vector3());
+const cursorMaterial = new PointsMaterial( { size: 5, sizeAttenuation: false, color: '#ff0000' } );
+const cursor = new Points( cursorGeometry, cursorMaterial );
+scene.add( cursor );
+
+// function onMouseMove(event) {
+//     event.preventDefault();
+
+//     mouse.x = ((event.clientX / WIDTH) * 2 - 1);
+//     mouse.y = -(event.clientY / HEIGHT) * 2 + 1;
+
+//     cursor.position.set(35, 1, 10);
+//     console.log(WIDTH, HEIGHT, camera.getFilmWidth())
+//     raycaster.setFromCamera(mouse, camera);
+    
+//     const intersects = raycaster.intersectObjects(scene.children, true);
+//     // console.log(intersects)
+// }
+
+
+let selectedObject = undefined;
+
+function onMouseMove( event ) {
+
+	// calculate mouse position in normalized device coordinates
+	// (-1 to +1) for both components
+
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+	// update the picking ray with the camera and mouse position
+	raycaster.setFromCamera( mouse, camera );
+
+	// calculate objects intersecting the picking ray
+	const intersects = raycaster.intersectObjects( scene.children );
+    const firstMesh = (intersects.find(x => x.object.type === 'Mesh') || {}).object
+    console.log(firstMesh)
+    if ( intersects.length > 0 && !!firstMesh) {
+        if ( selectedObject != firstMesh ) {
+            if ( selectedObject ) selectedObject.material.emissive.setHex( selectedObject.currentHex );
+            
+            selectedObject = firstMesh;
+            console.log(selectedObject.material)
+            selectedObject.currentHex = selectedObject.material.emissive.getHex();
+            selectedObject.material.emissive.setHex( 0xff0000 );
+
+        }
+
+    } else {
+
+        if ( selectedObject ) selectedObject.material.emissive.setHex( selectedObject.currentHex );
+
+        selectedObject = null;
+
+    }
+}
+
+const raysRaduis = 5;
+const rays = generateRays(raysRaduis, 1000);
+
+const raysPoints = [];
+rays.forEach(ray => {
+    raysPoints.push(new Vector3(ray.origin.x, ray.origin.y, ray.origin.z));
+    raysPoints.push(new Vector3(
+        ray.origin.x + ray.direction.x * 5,
+        ray.origin.y + ray.direction.y * 5,
+        ray.origin.z + ray.direction.z * 5,
+    ));
+});
+console.log(rays, raysPoints)
+const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
+const lines = new LineSegments(raysGeometry, material); // //drawing separated lines
+scene.add(lines);
+
+renderer.domElement.addEventListener('mousemove', onMouseMove);
 
 function render() {
     requestAnimationFrame(render);
