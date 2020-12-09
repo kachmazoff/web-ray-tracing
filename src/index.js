@@ -40,7 +40,7 @@ function generateSphere(radius, { detalization, color }) {
     return sphere;
 }
 
-const sphere = generateSphere(5, { color: "#909000" })
+const sphere = generateSphere(3, { color: "#909000" })
 // sphere.position.set(-10, 10, 5);
 scene.add(sphere)
 
@@ -95,7 +95,7 @@ const controls = createOrbitControl();
 // scene.add( dot );
 
 
-const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 5)
+const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 3)
 
 const ray = new Ray({ x: 0, y: 0, z: 5 }, vectorMinus({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 5 }))
 
@@ -176,22 +176,17 @@ function onMouseMove(event) {
 const raysRaduis = 5;
 const raysLength = 10;
 const rays = generateRays(raysRaduis, 100);
+const normalsRays = [];
 
 const raysPoints = [];
 const normalsPoints = [];
 const reflectedPoints = [];
 
 rays.forEach(ray => {
-    raysPoints.push(new Vector3(ray.origin.x, ray.origin.y, ray.origin.z));
-    raysPoints.push(new Vector3(
-        ray.origin.x + ray.direction.x * raysLength,
-        ray.origin.y + ray.direction.y * raysLength,
-        ray.origin.z + ray.direction.z * raysLength,
-    ));
-
     const intersectInfo = sphereObj.intersect(ray.origin, ray.direction)
     console.log(intersectInfo)
     if (intersectInfo.intersect) {
+        raysPoints.push(...ray.getPoints(intersectInfo.t0));
         const pos = {
             x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
             y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
@@ -206,15 +201,20 @@ rays.forEach(ray => {
         scene.add(dot);
         
         const dir = new Vector3(ray.direction.x, ray.direction.y, ray.direction.z);
-        dir.reflect(new Vector3(pos.x - sphereObj.position.x, pos.y - sphereObj.position.y, pos.z - sphereObj.position.z).normalize()).multiplyScalar(3)
+        dir.reflect(sphereObj.normal(pos)).multiplyScalar(3)
 
         reflectedPoints.push(intersectPos);
         reflectedPoints.push(dir.add(intersectPos));
 
-        normalsPoints.push(intersectPos)
-        normalsPoints.push(new Vector3(pos.x - sphereObj.position.x, pos.y - sphereObj.position.y, pos.z - sphereObj.position.z).normalize().add(intersectPos))
+        normalsRays.push(new Ray(intersectPos, sphereObj.normal(pos)));
+    }
+    else {
+        raysPoints.push(...ray.getPoints(20));
     }
 });
+
+normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
+
 console.log(rays, raysPoints)
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, material); // //drawing separated lines

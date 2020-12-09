@@ -1,3 +1,4 @@
+import { Vector3 } from "three";
 import { dotProduct } from "./utils/math";
 
 class Sphere {
@@ -27,6 +28,10 @@ class Sphere {
                 t0: t1
             };
         }
+    }
+
+    normal(point) {
+        return new Vector3().copy(point).sub(this.position).normalize();
     }
 }
 
