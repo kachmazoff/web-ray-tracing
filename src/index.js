@@ -22,7 +22,7 @@ scene.add(camera);
 var boxGeometry = new BoxGeometry(10, 10, 10);
 var basicMaterial = new MeshLambertMaterial({ color: 0x0095DD });
 var cube = new Mesh(boxGeometry, basicMaterial);
-scene.add(cube);
+// scene.add(cube);
 cube.rotation.set(0.4, 0.2, 0);
 
 
@@ -31,7 +31,7 @@ light.position.set(-10, 0, 50);
 scene.add(light);
 
 function generateSphere(radius, { detalization, color }) {
-    detalization = detalization || 20;
+    detalization = detalization || 100;
 
     const shereGeometry = new SphereGeometry(radius, detalization, detalization);
     const sphereMaterial = new MeshLambertMaterial({ color: color });
@@ -41,7 +41,7 @@ function generateSphere(radius, { detalization, color }) {
 }
 
 const sphere = generateSphere(5, { color: "#909000" })
-sphere.position.set(-10, 10, 5);
+// sphere.position.set(-10, 10, 5);
 scene.add(sphere)
 
 const size = 50;
@@ -95,9 +95,9 @@ const controls = createOrbitControl();
 // scene.add( dot );
 
 
-const sphereObj = new Sphere({ x: -10, y: 10, z: 5 }, 5)
+const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 5)
 
-const ray = new Ray({x: 0, y: 0, z: 5}, vectorMinus({ x: -10, y: 10, z: 5 }, {x: 0, y: 0, z: 5}))
+const ray = new Ray({ x: 0, y: 0, z: 5 }, vectorMinus({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 5 }))
 
 const material = new LineBasicMaterial({ color: 0x0000ff });
 const points = [];
@@ -121,10 +121,10 @@ if (intersectInfo.intersect) {
     };
 
     const dotGeometry = new Geometry();
-    dotGeometry.vertices.push(new Vector3( pos.x, pos.y, pos.z));
-    const dotMaterial = new PointsMaterial( { size: 5, sizeAttenuation: false } );
-    const dot = new Points( dotGeometry, dotMaterial );
-    scene.add( dot );
+    dotGeometry.vertices.push(new Vector3(pos.x, pos.y, pos.z));
+    const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
+    const dot = new Points(dotGeometry, dotMaterial);
+    scene.add(dot);
 }
 
 const raycaster = new Raycaster();
@@ -132,9 +132,9 @@ const mouse = new Vector2();
 
 const cursorGeometry = new Geometry();
 cursorGeometry.vertices.push(new Vector3());
-const cursorMaterial = new PointsMaterial( { size: 5, sizeAttenuation: false, color: '#ff0000' } );
-const cursor = new Points( cursorGeometry, cursorMaterial );
-scene.add( cursor );
+const cursorMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false, color: '#ff0000' });
+const cursor = new Points(cursorGeometry, cursorMaterial);
+scene.add(cursor);
 
 // function onMouseMove(event) {
 //     event.preventDefault();
@@ -145,7 +145,7 @@ scene.add( cursor );
 //     cursor.position.set(35, 1, 10);
 //     console.log(WIDTH, HEIGHT, camera.getFilmWidth())
 //     raycaster.setFromCamera(mouse, camera);
-    
+
 //     const intersects = raycaster.intersectObjects(scene.children, true);
 //     // console.log(intersects)
 // }
@@ -153,35 +153,35 @@ scene.add( cursor );
 
 let selectedObject = undefined;
 
-function onMouseMove( event ) {
+function onMouseMove(event) {
 
-	// calculate mouse position in normalized device coordinates
-	// (-1 to +1) for both components
+    // calculate mouse position in normalized device coordinates
+    // (-1 to +1) for both components
 
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-	// update the picking ray with the camera and mouse position
-	raycaster.setFromCamera( mouse, camera );
+    // update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
 
-	// calculate objects intersecting the picking ray
-	const intersects = raycaster.intersectObjects( scene.children );
+    // calculate objects intersecting the picking ray
+    const intersects = raycaster.intersectObjects(scene.children);
     const firstMesh = (intersects.find(x => x.object.type === 'Mesh') || {}).object
     console.log(firstMesh)
-    if ( intersects.length > 0 && !!firstMesh) {
-        if ( selectedObject != firstMesh ) {
-            if ( selectedObject ) selectedObject.material.emissive.setHex( selectedObject.currentHex );
-            
+    if (intersects.length > 0 && !!firstMesh) {
+        if (selectedObject != firstMesh) {
+            if (selectedObject) selectedObject.material.emissive.setHex(selectedObject.currentHex);
+
             selectedObject = firstMesh;
             console.log(selectedObject.material)
             selectedObject.currentHex = selectedObject.material.emissive.getHex();
-            selectedObject.material.emissive.setHex( 0xff0000 );
+            selectedObject.material.emissive.setHex(0xff0000);
 
         }
 
     } else {
 
-        if ( selectedObject ) selectedObject.material.emissive.setHex( selectedObject.currentHex );
+        if (selectedObject) selectedObject.material.emissive.setHex(selectedObject.currentHex);
 
         selectedObject = null;
 
@@ -189,16 +189,33 @@ function onMouseMove( event ) {
 }
 
 const raysRaduis = 5;
-const rays = generateRays(raysRaduis, 1000);
+const raysLength = 10;
+const rays = generateRays(raysRaduis, 200);
 
 const raysPoints = [];
 rays.forEach(ray => {
     raysPoints.push(new Vector3(ray.origin.x, ray.origin.y, ray.origin.z));
     raysPoints.push(new Vector3(
-        ray.origin.x + ray.direction.x * 5,
-        ray.origin.y + ray.direction.y * 5,
-        ray.origin.z + ray.direction.z * 5,
+        ray.origin.x + ray.direction.x * raysLength,
+        ray.origin.y + ray.direction.y * raysLength,
+        ray.origin.z + ray.direction.z * raysLength,
     ));
+
+    const intersectInfo = sphereObj.intersect(ray.origin, ray.direction)
+    console.log(intersectInfo)
+    if (intersectInfo.intersect) {
+        const pos = {
+            x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
+            y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
+            z: ray.origin.z + intersectInfo.t0 * ray.direction.z,
+        };
+
+        const dotGeometry = new Geometry();
+        dotGeometry.vertices.push(new Vector3(pos.x, pos.y, pos.z));
+        const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
+        const dot = new Points(dotGeometry, dotMaterial);
+        scene.add(dot);
+    }
 });
 console.log(rays, raysPoints)
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
