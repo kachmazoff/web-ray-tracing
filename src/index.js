@@ -89,31 +89,7 @@ const controls = createOrbitControl();
 
 const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 3)
 
-const ray = new Ray({ x: 0, y: 0, z: 5 }, vectorMinus({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 5 }))
-
-const material = new LineBasicMaterial({ color: 0x0000ff });
-const points = [];
-points.push(new Vector3(0, 0, 5));
-points.push(new Vector3(-10, 10, 5));
-
-const geometry = new BufferGeometry().setFromPoints(points);
-const line = new LineSegments(geometry, material); // //drawing separated lines
-scene.add(line);
-
-const intersectInfo = sphereObj.intersect(ray.origin, ray.direction)
-if (intersectInfo.intersect) {
-    const pos = {
-        x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
-        y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
-        z: ray.origin.z + intersectInfo.t0 * ray.direction.z,
-    };
-
-    const dotGeometry = new Geometry();
-    dotGeometry.vertices.push(new Vector3(pos.x, pos.y, pos.z));
-    const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
-    const dot = new Points(dotGeometry, dotMaterial);
-    scene.add(dot);
-}
+const rayMaterial = new LineBasicMaterial({ color: 0x0000ff });
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
@@ -156,7 +132,7 @@ function onMouseMove(event) {
 }
 
 const raysRaduis = 5;
-const rays = generateRays(raysRaduis, 100);
+const rays = generateRays(raysRaduis, 1000);
 const normalsRays = [];
 
 const raysPoints = [];
@@ -196,7 +172,7 @@ rays.forEach(ray => {
 normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
 
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
-const lines = new LineSegments(raysGeometry, material); // //drawing separated lines
+const lines = new LineSegments(raysGeometry, rayMaterial); // //drawing separated lines
 
 const refGeometry = new BufferGeometry().setFromPoints(reflectedPoints);
 const refMaterial = new LineBasicMaterial({ color: 0x00f5ff });
