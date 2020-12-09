@@ -1,6 +1,9 @@
-import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3 } from "three";
+import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments } from "three";
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Ray } from "./Ray";
+import { Sphere } from "./Sphere";
+import { vectorMinus } from "./utils/math";
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 
@@ -89,6 +92,39 @@ const controls = createOrbitControl();
 // var dotMaterial = new PointsMaterial( { size: 5, sizeAttenuation: false } );
 // var dot = new Points( dotGeometry, dotMaterial );
 // scene.add( dot );
+
+
+const sphereObj = new Sphere({ x: -10, y: 10, z: 5 }, 5)
+
+const ray = new Ray({x: 0, y: 0, z: 5}, vectorMinus({ x: -10, y: 10, z: 5 }, {x: 0, y: 0, z: 5}))
+
+const material = new LineBasicMaterial({ color: 0x0000ff });
+const points = [];
+points.push(new Vector3(0, 0, 5));
+points.push(new Vector3(-10, 10, 5));
+
+console.log('new Vector3(0, 0, 5)', new Vector3(0, 0, 5))
+console.log('new Vector3(0, 0, 5) - new Vector3(-10, 10, 5)', (new Vector3(0, 0, 5).sub(new Vector3(-10, 10, 5))))
+
+const geometry = new BufferGeometry().setFromPoints(points);
+const line = new LineSegments(geometry, material); // //drawing separated lines
+scene.add(line);
+
+const intersectInfo = sphereObj.intersect(ray.origin, ray.direction)
+console.log(intersectInfo)
+if (intersectInfo.intersect) {
+    const pos = {
+        x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
+        y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
+        z: ray.origin.z + intersectInfo.t0 * ray.direction.z,
+    };
+
+    const dotGeometry = new Geometry();
+    dotGeometry.vertices.push(new Vector3( pos.x, pos.y, pos.z));
+    const dotMaterial = new PointsMaterial( { size: 5, sizeAttenuation: false } );
+    const dot = new Points( dotGeometry, dotMaterial );
+    scene.add( dot );
+}
 
 function render() {
     requestAnimationFrame(render);
