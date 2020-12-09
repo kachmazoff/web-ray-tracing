@@ -30,7 +30,7 @@ class Sphere {
         }
     }
 
-    normal(point) {
+    getNormal(point) {
         return new Vector3().copy(point).sub(this.position).normalize();
     }
 }

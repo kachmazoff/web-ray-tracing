@@ -1,10 +1,11 @@
-import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments, Vector2, Raycaster, CircleGeometry } from "three";
+import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments, Vector2, Raycaster, CircleGeometry, PlaneBufferGeometry, DoubleSide } from "three";
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Ray } from "./Ray";
 import { Sphere } from "./Sphere";
 import { vectorMinus } from "./utils/math";
 import { generateRays } from "./Rays";
+import { Plane } from "./Plane";
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 
@@ -131,8 +132,20 @@ function onMouseMove(event) {
     }
 }
 
+const planeWidth = 20.0;
+const planeHeight = 20.0;
+const planeGeometry = new PlaneBufferGeometry(planeWidth, planeHeight, 1, 1);
+const planeMaterial = new MeshBasicMaterial({ color: '#7d848a', side: DoubleSide });
+// const planeMaterial = new MeshLambertMaterial( {color: '#7d848a', side: DoubleSide} );
+const plane = new Mesh(planeGeometry, planeMaterial);
+plane.rotateY(Math.PI / 2)
+plane.rotateX(-Math.PI / 4)
+scene.add(plane)
+
+const planeObj = new Plane({ x: 1, y: 1, z: 0 }, { x: 0, y: 0, z: -1 });
+
 const raysRaduis = 5;
-const rays = generateRays(raysRaduis, 1000);
+const rays = generateRays(raysRaduis, 200);
 const normalsRays = [];
 const reflectedRays = [];
 
@@ -141,7 +154,7 @@ const normalsPoints = [];
 const reflectedPoints = [];
 
 rays.forEach(ray => {
-    const intersectInfo = sphereObj.intersect(ray.origin, ray.direction)
+    const intersectInfo = planeObj.intersect(ray.origin, ray.direction)
     if (intersectInfo.intersect) {
         raysPoints.push(...ray.getPoints(intersectInfo.t0));
         const pos = {
@@ -156,12 +169,12 @@ rays.forEach(ray => {
         const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
         const dot = new Points(dotGeometry, dotMaterial);
         scene.add(dot);
-        
+
         const reflectedRayDirection = new Vector3().copy(ray.direction);
-        reflectedRayDirection.reflect(sphereObj.normal(pos))
+        reflectedRayDirection.reflect(planeObj.getNormal(pos))
 
         reflectedRays.push(new Ray(intersectPos, reflectedRayDirection));
-        normalsRays.push(new Ray(intersectPos, sphereObj.normal(pos)));
+        normalsRays.push(new Ray(intersectPos, planeObj.getNormal(pos)));
     }
     else {
         raysPoints.push(...ray.getPoints(20));
