@@ -41,7 +41,6 @@ function generateSphere(radius, { detalization, color }) {
 }
 
 const sphere = generateSphere(3, { color: "#909000" })
-// sphere.position.set(-10, 10, 5);
 scene.add(sphere)
 
 const size = 50;
@@ -88,13 +87,6 @@ function createOrbitControl() {
 
 const controls = createOrbitControl();
 
-// var dotGeometry = new Geometry();
-// dotGeometry.vertices.push(new Vector3( 10, 10, 0));
-// var dotMaterial = new PointsMaterial( { size: 5, sizeAttenuation: false } );
-// var dot = new Points( dotGeometry, dotMaterial );
-// scene.add( dot );
-
-
 const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 3)
 
 const ray = new Ray({ x: 0, y: 0, z: 5 }, vectorMinus({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 5 }))
@@ -104,15 +96,11 @@ const points = [];
 points.push(new Vector3(0, 0, 5));
 points.push(new Vector3(-10, 10, 5));
 
-console.log('new Vector3(0, 0, 5)', new Vector3(0, 0, 5))
-console.log('new Vector3(0, 0, 5) - new Vector3(-10, 10, 5)', (new Vector3(0, 0, 5).sub(new Vector3(-10, 10, 5))))
-
 const geometry = new BufferGeometry().setFromPoints(points);
 const line = new LineSegments(geometry, material); // //drawing separated lines
 scene.add(line);
 
 const intersectInfo = sphereObj.intersect(ray.origin, ray.direction)
-console.log(intersectInfo)
 if (intersectInfo.intersect) {
     const pos = {
         x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
@@ -152,29 +140,22 @@ function onMouseMove(event) {
     // calculate objects intersecting the picking ray
     const intersects = raycaster.intersectObjects(scene.children);
     const firstMesh = (intersects.find(x => x.object.type === 'Mesh') || {}).object
-    console.log(firstMesh)
     if (intersects.length > 0 && !!firstMesh) {
         if (selectedObject != firstMesh) {
-            if (selectedObject) selectedObject.material.emissive.setHex(selectedObject.currentHex);
+            if (selectedObject) { selectedObject.material.emissive.setHex(selectedObject.currentHex); }
 
             selectedObject = firstMesh;
-            console.log(selectedObject.material)
             selectedObject.currentHex = selectedObject.material.emissive.getHex();
             selectedObject.material.emissive.setHex(0xff0000);
-
         }
-
     } else {
-
-        if (selectedObject) selectedObject.material.emissive.setHex(selectedObject.currentHex);
+        if (selectedObject) { selectedObject.material.emissive.setHex(selectedObject.currentHex); }
 
         selectedObject = null;
-
     }
 }
 
 const raysRaduis = 5;
-const raysLength = 10;
 const rays = generateRays(raysRaduis, 100);
 const normalsRays = [];
 
@@ -184,7 +165,6 @@ const reflectedPoints = [];
 
 rays.forEach(ray => {
     const intersectInfo = sphereObj.intersect(ray.origin, ray.direction)
-    console.log(intersectInfo)
     if (intersectInfo.intersect) {
         raysPoints.push(...ray.getPoints(intersectInfo.t0));
         const pos = {
@@ -215,7 +195,6 @@ rays.forEach(ray => {
 
 normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
 
-console.log(rays, raysPoints)
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, material); // //drawing separated lines
 
