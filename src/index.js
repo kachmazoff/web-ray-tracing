@@ -134,6 +134,7 @@ function onMouseMove(event) {
 const raysRaduis = 5;
 const rays = generateRays(raysRaduis, 1000);
 const normalsRays = [];
+const reflectedRays = [];
 
 const raysPoints = [];
 const normalsPoints = [];
@@ -156,12 +157,10 @@ rays.forEach(ray => {
         const dot = new Points(dotGeometry, dotMaterial);
         scene.add(dot);
         
-        const dir = new Vector3(ray.direction.x, ray.direction.y, ray.direction.z);
-        dir.reflect(sphereObj.normal(pos)).multiplyScalar(3)
+        const reflectedRayDirection = new Vector3().copy(ray.direction);
+        reflectedRayDirection.reflect(sphereObj.normal(pos))
 
-        reflectedPoints.push(intersectPos);
-        reflectedPoints.push(dir.add(intersectPos));
-
+        reflectedRays.push(new Ray(intersectPos, reflectedRayDirection));
         normalsRays.push(new Ray(intersectPos, sphereObj.normal(pos)));
     }
     else {
@@ -170,6 +169,7 @@ rays.forEach(ray => {
 });
 
 normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
+reflectedRays.forEach(x => reflectedPoints.push(...x.getPoints(5)))
 
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, rayMaterial); // //drawing separated lines
