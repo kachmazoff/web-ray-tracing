@@ -1,4 +1,4 @@
-import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper } from "three";
+import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3 } from "three";
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 const WIDTH = window.innerWidth;
@@ -83,6 +83,12 @@ function createOrbitControl() {
 }
 
 const controls = createOrbitControl();
+
+// var dotGeometry = new Geometry();
+// dotGeometry.vertices.push(new Vector3( 10, 10, 0));
+// var dotMaterial = new PointsMaterial( { size: 5, sizeAttenuation: false } );
+// var dot = new Points( dotGeometry, dotMaterial );
+// scene.add( dot );
 
 function render() {
     requestAnimationFrame(render);
