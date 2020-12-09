@@ -136,21 +136,6 @@ const cursorMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false, col
 const cursor = new Points(cursorGeometry, cursorMaterial);
 scene.add(cursor);
 
-// function onMouseMove(event) {
-//     event.preventDefault();
-
-//     mouse.x = ((event.clientX / WIDTH) * 2 - 1);
-//     mouse.y = -(event.clientY / HEIGHT) * 2 + 1;
-
-//     cursor.position.set(35, 1, 10);
-//     console.log(WIDTH, HEIGHT, camera.getFilmWidth())
-//     raycaster.setFromCamera(mouse, camera);
-
-//     const intersects = raycaster.intersectObjects(scene.children, true);
-//     // console.log(intersects)
-// }
-
-
 let selectedObject = undefined;
 
 function onMouseMove(event) {
@@ -190,9 +175,12 @@ function onMouseMove(event) {
 
 const raysRaduis = 5;
 const raysLength = 10;
-const rays = generateRays(raysRaduis, 200);
+const rays = generateRays(raysRaduis, 100);
 
 const raysPoints = [];
+const normalsPoints = [];
+const reflectedPoints = [];
+
 rays.forEach(ray => {
     raysPoints.push(new Vector3(ray.origin.x, ray.origin.y, ray.origin.z));
     raysPoints.push(new Vector3(
@@ -211,16 +199,37 @@ rays.forEach(ray => {
         };
 
         const dotGeometry = new Geometry();
-        dotGeometry.vertices.push(new Vector3(pos.x, pos.y, pos.z));
+        const intersectPos = new Vector3(pos.x, pos.y, pos.z);
+        dotGeometry.vertices.push(intersectPos);
         const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
         const dot = new Points(dotGeometry, dotMaterial);
         scene.add(dot);
+        
+        const dir = new Vector3(ray.direction.x, ray.direction.y, ray.direction.z);
+        dir.reflect(new Vector3(pos.x - sphereObj.position.x, pos.y - sphereObj.position.y, pos.z - sphereObj.position.z).normalize()).multiplyScalar(3)
+
+        reflectedPoints.push(intersectPos);
+        reflectedPoints.push(dir.add(intersectPos));
+
+        normalsPoints.push(intersectPos)
+        normalsPoints.push(new Vector3(pos.x - sphereObj.position.x, pos.y - sphereObj.position.y, pos.z - sphereObj.position.z).normalize().add(intersectPos))
     }
 });
 console.log(rays, raysPoints)
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, material); // //drawing separated lines
+
+const refGeometry = new BufferGeometry().setFromPoints(reflectedPoints);
+const refMaterial = new LineBasicMaterial({ color: 0x00f5ff });
+const reflections = new LineSegments(refGeometry, refMaterial); // //drawing separated lines
+
+const normalsRaysGeometry = new BufferGeometry().setFromPoints(normalsPoints);
+const normalsMaterial = new LineBasicMaterial({ color: 0xffff00 });
+const normalsLines = new LineSegments(normalsRaysGeometry, normalsMaterial); // //drawing separated lines
+
 scene.add(lines);
+scene.add(normalsLines);
+scene.add(reflections);
 
 renderer.domElement.addEventListener('mousemove', onMouseMove);
 
