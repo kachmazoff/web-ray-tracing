@@ -44,6 +44,10 @@ class Plane {
 
         return plane
     }
+
+    setPosition(newPosition) {
+        this.position.copy(newPosition)
+    }
 }
 
 export { Plane }

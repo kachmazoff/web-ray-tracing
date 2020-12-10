@@ -102,7 +102,7 @@ function onMouseMove(event) {
 
     // calculate objects intersecting the picking ray
     const intersects = raycaster.intersectObjects(scene.children);
-    const firstMesh = (intersects.find(x => x.object.type === 'Mesh') || {}).object
+    const firstMesh = (intersects.find(x => x.object.type === 'Mesh' && x.object.material.type === 'MeshLambertMaterial') || {}).object
     if (intersects.length > 0 && !!firstMesh) {
         if (selectedObject != firstMesh) {
             if (selectedObject) { selectedObject.material.emissive.setHex(selectedObject.currentHex); }
@@ -126,10 +126,11 @@ const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -1 });
 scene.add(plane2Obj.getMesh())
 
 const rays = generateRaysCircleStroke(4.95, 200, new Vector3(20, 0, -20), new Vector3(-1, 0, 0));
-const reflectedRays = [];
+let reflectedRays = [];
 const normalsRays = [];
 
 const raysPoints = [];
+const reflectedRaysPoints = [];
 const normalsPoints = [];
 const maxRecursionDepth = 5;
 
@@ -146,20 +147,27 @@ intersections.forEach(x => { dotGeometry.vertices.push(x); });
 intersections2.forEach(x => { dotGeometry.vertices.push(x); });
 
 const dots = new Points(dotGeometry, dotMaterial);
+dots.name = 'Intersects';
 scene.add(dots);
 
 rays.forEach(x => raysPoints.push(...x.getPoints()))
-reflectedRays.forEach(x => raysPoints.push(...x.getPoints()))
+reflectedRays.forEach(x => reflectedRaysPoints.push(...x.getPoints()))
 // normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
 
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, rayMaterial); // //drawing separated lines
+lines.name = 'PrimaryRays';
+
+const reflectedRaysGeometry = new BufferGeometry().setFromPoints(reflectedRaysPoints);
+const reflectedLines = new LineSegments(reflectedRaysGeometry, rayMaterial); // //drawing separated lines
+reflectedLines.name = 'ReflectedRays';
 
 // const normalsRaysGeometry = new BufferGeometry().setFromPoints(normalsPoints);
 // const normalsMaterial = new LineBasicMaterial({ color: 0xffff00 });
 // const normalsLines = new LineSegments(normalsRaysGeometry, normalsMaterial); // //drawing separated lines
 
 scene.add(lines);
+scene.add(reflectedLines);
 // scene.add(normalsLines);
 
 renderer.domElement.addEventListener('mousemove', onMouseMove);
@@ -237,9 +245,40 @@ window.addEventListener('keydown', function (event) {
 });
 
 transformControls.addEventListener('change', event => {
-    console.log("event.target.children[1].mode", event.target.children[1].mode)
-    console.log('new position:', event.target.children[1].object.position)
-    // console.log("event.target.children[1].mode", event.target.children[1].object.position)
+    if (!event.target.children[1].object.position.equals(planeObj.position)) {
+        planeObj.setPosition(event.target.children[1].object.position)
+        scene.remove(scene.getObjectByName('Intersects'))
+        scene.remove(scene.getObjectByName('ReflectedRays'))
+        scene.remove(scene.getObjectByName('PrimaryRays'))
+
+        reflectedRays = [];
+        const intersections = trace(rays, objects, reflectedRays, maxRecursionDepth);
+        const intersections2 = trace(reflectedRays, objects, reflectedRays, maxRecursionDepth);
+
+        const dotGeometry = new Geometry();
+        const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
+
+        intersections.forEach(x => { dotGeometry.vertices.push(x); });
+        intersections2.forEach(x => { dotGeometry.vertices.push(x); });
+
+        const raysPoints = [];
+        rays.forEach(x => raysPoints.push(...x.getPoints()))
+        const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
+        const lines = new LineSegments(raysGeometry, rayMaterial); // //drawing separated lines
+        lines.name = 'PrimaryRays';
+        scene.add(lines);
+
+        const reflectedRaysPoints = [];
+        reflectedRays.forEach(x => reflectedRaysPoints.push(...x.getPoints()))
+        const reflectedRaysGeometry = new BufferGeometry().setFromPoints(reflectedRaysPoints);
+        const reflectedLines = new LineSegments(reflectedRaysGeometry, rayMaterial); // //drawing separated lines
+        reflectedLines.name = 'ReflectedRays';
+        scene.add(reflectedLines);
+
+        const dots = new Points(dotGeometry, dotMaterial);
+        dots.name = 'Intersects';
+        scene.add(dots);
+    }
 });
 
 window.addEventListener('keyup', function (event) {
