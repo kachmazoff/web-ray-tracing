@@ -27,8 +27,8 @@ class Plane {
     }
 
     getMesh(params) {
-        const color = '#7d848a';
-        const size = 20.0;
+        let color = '#7d848a';
+        let size = 20.0;
         if (!!params && !!params.color) { color = params.color; }
         if (!!params && !!params.size) { size = params.size; }
 

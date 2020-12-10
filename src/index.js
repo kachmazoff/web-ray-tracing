@@ -30,19 +30,6 @@ var light = new PointLight(0xFFFFFF);
 light.position.set(-10, 0, 50);
 scene.add(light);
 
-function generateSphere(radius, { detalization, color }) {
-    detalization = detalization || 100;
-
-    const shereGeometry = new SphereGeometry(radius, detalization, detalization);
-    const sphereMaterial = new MeshLambertMaterial({ color: color });
-    const sphere = new Mesh(shereGeometry, sphereMaterial);
-
-    return sphere;
-}
-
-const sphere = generateSphere(3, { color: "#909000" })
-// scene.add(sphere)
-
 const size = 50;
 const divisions = 10;
 
@@ -87,7 +74,8 @@ function createOrbitControl() {
 
 const controls = createOrbitControl();
 
-const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 3)
+const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 8)
+scene.add(sphereObj.getMesh());
 
 const rayMaterial = new LineBasicMaterial({ color: 0x0000ff });
 
@@ -166,7 +154,7 @@ const raysPoints = [];
 const normalsPoints = [];
 const maxRecursionDepth = 5;
 
-const objects = [planeObj, plane2Obj];
+const objects = [planeObj, plane2Obj, sphereObj];
 
 for (let i = 0; i < rays.length; i++) {
     const ray = rays[i];

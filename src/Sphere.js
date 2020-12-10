@@ -1,4 +1,4 @@
-import { Vector3 } from "three";
+import { Mesh, MeshLambertMaterial, SphereGeometry, Vector3 } from "three";
 import { dotProduct } from "./utils/math";
 
 class Sphere {
@@ -32,6 +32,19 @@ class Sphere {
 
     getNormal(point) {
         return new Vector3().copy(point).sub(this.position).normalize();
+    }
+
+    getMesh(params) {
+        let color = '#b7b7b7';
+        if (!!params && !!params.color) { color = params.color; }
+        
+        const shereGeometry = new SphereGeometry(this.radius, 100, 100);
+        const sphereMaterial = new MeshLambertMaterial({ color: color });
+        const sphere = new Mesh(shereGeometry, sphereMaterial);
+        
+        sphere.position.set(this.position.x, this.position.y, this.position.z);
+
+        return sphere;
     }
 }
 
