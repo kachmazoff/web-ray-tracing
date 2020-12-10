@@ -1,4 +1,4 @@
-import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments, Vector2, Raycaster, CircleGeometry, PlaneBufferGeometry, DoubleSide } from "three";
+import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments, Vector2, Raycaster } from "three";
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Ray } from "./Ray";
@@ -131,7 +131,7 @@ function onMouseMove(event) {
     }
 }
 
-const planeObj = new Plane(new Vector3(-3, 0, 0), { x: 1, y: 1, z: 1 }, { x: 1, y: -2, z: 1 });
+const planeObj = new Plane(new Vector3(-30, 0, 0), { x: 1, y: 1, z: 1 });
 scene.add(planeObj.getMesh())
 
 const raysRaduis = 5;

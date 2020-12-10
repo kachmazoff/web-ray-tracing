@@ -2,10 +2,9 @@ import { DoubleSide, Mesh, MeshBasicMaterial, PlaneBufferGeometry, Vector3 } fro
 import { normalized } from "./utils/math";
 
 class Plane {
-    constructor(position, normal, radius) {
-        this.position = position;
+    constructor(position, normal) {
         this.normal = normalized(normal);
-        this.radius = normalized(radius);
+        this.position = position;
     }
 
     intersect(rayOrigin, rayDirection) {
@@ -13,7 +12,7 @@ class Plane {
         if (-1e-9 < b && b < 1e-9) {
             return { intersect: false }
         }
-        const t = new Vector3().copy(this.normal).dot(new Vector3().copy(this.radius).sub(rayOrigin).add(this.position)) / b;
+        const t = new Vector3().copy(this.normal).dot(new Vector3().copy(this.position).sub(rayOrigin)) / b;
         if (t < 0) {
             return { intersect: false }
         }
