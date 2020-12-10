@@ -19,16 +19,13 @@ let camera = new PerspectiveCamera(70, WIDTH / HEIGHT);
 camera.position.z = 50;
 scene.add(camera);
 
-var boxGeometry = new BoxGeometry(10, 10, 10);
-var basicMaterial = new MeshLambertMaterial({ color: 0x0095DD });
-var cube = new Mesh(boxGeometry, basicMaterial);
-// scene.add(cube);
-cube.rotation.set(0.4, 0.2, 0);
+var lightFront = new PointLight(0xFFFFFF);
+lightFront.position.set(-10, 0, 50);
+scene.add(lightFront);
 
-
-var light = new PointLight(0xFFFFFF);
-light.position.set(-10, 0, 50);
-scene.add(light);
+var lightBack = new PointLight(0xFFFFFF);
+lightBack.position.set(50, 0, -50);
+scene.add(lightBack);
 
 const size = 50;
 const divisions = 10;
@@ -74,19 +71,13 @@ function createOrbitControl() {
 
 const controls = createOrbitControl();
 
-const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 8)
+const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 5)
 scene.add(sphereObj.getMesh());
 
 const rayMaterial = new LineBasicMaterial({ color: 0x0000ff });
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
-
-const cursorGeometry = new Geometry();
-cursorGeometry.vertices.push(new Vector3());
-const cursorMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false, color: '#ff0000' });
-const cursor = new Points(cursorGeometry, cursorMaterial);
-scene.add(cursor);
 
 let selectedObject = undefined;
 
@@ -140,20 +131,22 @@ function getNearestIntersection(objects, ray) {
     }
 }
 
-const planeObj = new Plane(new Vector3(-20, 0, -10), { x: 1, y: 0, z: 1 });
+// const planeObj = new Plane(new Vector3(-20, 0, -10), { x: 1, y: 0, z: 1 });
+const planeObj = new Plane(new Vector3(-10, 0, 0), { x: 1, y: 0.2, z: 0 });
 scene.add(planeObj.getMesh())
 
-const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -1 });
-scene.add(plane2Obj.getMesh())
+// const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -1 });
+// scene.add(plane2Obj.getMesh())
 
-const rays = generateRaysCircleStroke(7.95, 200, new Vector3(20, 0, 0), new Vector3(-1, 0, 0));
+const rays = generateRaysCircleStroke(4.95, 200, new Vector3(20, 0, 0), new Vector3(-1, 0, 0));
 const normalsRays = [];
 
 const raysPoints = [];
 const normalsPoints = [];
 const maxRecursionDepth = 5;
 
-const objects = [planeObj, plane2Obj, sphereObj];
+// const objects = [planeObj, plane2Obj, sphereObj];
+const objects = [planeObj, sphereObj];
 
 for (let i = 0; i < rays.length; i++) {
     const ray = rays[i];
@@ -196,7 +189,6 @@ const normalsLines = new LineSegments(normalsRaysGeometry, normalsMaterial); // 
 
 scene.add(lines);
 scene.add(normalsLines);
-// scene.add(reflections);
 
 renderer.domElement.addEventListener('mousemove', onMouseMove);
 
