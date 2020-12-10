@@ -1,10 +1,7 @@
 import { Vector3 } from "three";
 import { Ray } from "./Ray";
 
-function generateRays(radius, raysCount) {
-    const center = new Vector3(10, 0, 0);
-    const commonDirection = new Vector3(-1, 0, 0);
-
+function generateRays(radius, raysCount, center, commonDirection) {
     const rays = [];
     for (let i = 0; i < raysCount; i++) {
         const randomPoint = new Vector3().random();

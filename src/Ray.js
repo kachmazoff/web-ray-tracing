@@ -5,13 +5,18 @@ class Ray {
     constructor(origin, direction) {
         this.origin = origin;
         this.direction = normalized(direction);
+        this.length = 100;
     }
 
-    getPoints(length = 3) {
+    getPoints(rayLength) {
         return [
             new Vector3().copy(this.origin),
-            new Vector3().copy(this.direction).multiplyScalar(length).add(this.origin)
+            new Vector3().copy(this.direction).multiplyScalar(rayLength || this.length).add(this.origin)
         ]
+    }
+
+    setLength(newLength) {
+        this.length = newLength;
     }
 }
 

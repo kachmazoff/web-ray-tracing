@@ -41,7 +41,7 @@ function generateSphere(radius, { detalization, color }) {
 }
 
 const sphere = generateSphere(3, { color: "#909000" })
-scene.add(sphere)
+// scene.add(sphere)
 
 const size = 50;
 const divisions = 10;
@@ -131,11 +131,14 @@ function onMouseMove(event) {
     }
 }
 
-const planeObj = new Plane(new Vector3(-30, 0, 0), { x: 1, y: 1, z: 1 });
+const planeObj = new Plane(new Vector3(-20, 0, -10), { x: 1, y: 0, z: 1 });
 scene.add(planeObj.getMesh())
 
+const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -2 });
+scene.add(plane2Obj.getMesh())
+
 const raysRaduis = 5;
-const rays = generateRays(raysRaduis, 200);
+const rays = generateRays(raysRaduis, 200, new Vector3(20, 0, -10), new Vector3(-1, 0, 0));
 const normalsRays = [];
 const reflectedRays = [];
 
@@ -146,7 +149,7 @@ const reflectedPoints = [];
 rays.forEach(ray => {
     const intersectInfo = planeObj.intersect(ray.origin, ray.direction)
     if (intersectInfo.intersect) {
-        raysPoints.push(...ray.getPoints(intersectInfo.t0));
+        ray.setLength(intersectInfo.t0);
         const pos = {
             x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
             y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
@@ -166,13 +169,36 @@ rays.forEach(ray => {
         reflectedRays.push(new Ray(intersectPos, reflectedRayDirection));
         normalsRays.push(new Ray(intersectPos, planeObj.getNormal(pos)));
     }
-    else {
-        raysPoints.push(...ray.getPoints(20));
+});
+
+reflectedRays.forEach(ray => {
+    const intersectInfo = plane2Obj.intersect(ray.origin, ray.direction)
+    if (intersectInfo.intersect) {
+        ray.setLength(intersectInfo.t0);
+        const pos = {
+            x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
+            y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
+            z: ray.origin.z + intersectInfo.t0 * ray.direction.z,
+        };
+
+        const dotGeometry = new Geometry();
+        const intersectPos = new Vector3(pos.x, pos.y, pos.z);
+        dotGeometry.vertices.push(intersectPos);
+        const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
+        const dot = new Points(dotGeometry, dotMaterial);
+        scene.add(dot);
+
+        const reflectedRayDirection = new Vector3().copy(ray.direction);
+        reflectedRayDirection.reflect(plane2Obj.getNormal(pos))
+
+        reflectedRays.push(new Ray(intersectPos, reflectedRayDirection));
+        normalsRays.push(new Ray(intersectPos, plane2Obj.getNormal(pos)));
     }
 });
 
+rays.forEach(x => raysPoints.push(...x.getPoints()))
 normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
-reflectedRays.forEach(x => reflectedPoints.push(...x.getPoints(5)))
+reflectedRays.forEach(x => reflectedPoints.push(...x.getPoints()))
 
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, rayMaterial); // //drawing separated lines
