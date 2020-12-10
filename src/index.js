@@ -131,29 +131,55 @@ function onMouseMove(event) {
     }
 }
 
+function getNearestIntersection(objects, ray) {
+    let minT = 1e9;
+    let intersect = false;
+    let intersectedObject = undefined;
+
+    objects.forEach(o => {
+        const intersectInfo = o.intersect(ray.origin, ray.direction);
+        if (intersectInfo.intersect && minT > intersectInfo.t0 && intersectInfo.t0 > 1e-9) {
+            minT = intersectInfo.t0;
+            intersect = true;
+            intersectedObject = o;
+        }
+    });
+
+    return {
+        intersect,
+        t: minT,
+        intersectedObject
+    }
+}
+
 const planeObj = new Plane(new Vector3(-20, 0, -10), { x: 1, y: 0, z: 1 });
 scene.add(planeObj.getMesh())
 
-const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -2 });
+const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -1 });
 scene.add(plane2Obj.getMesh())
 
 const raysRaduis = 5;
 const rays = generateRays(raysRaduis, 200, new Vector3(20, 0, -10), new Vector3(-1, 0, 0));
 const normalsRays = [];
-const reflectedRays = [];
 
 const raysPoints = [];
 const normalsPoints = [];
-const reflectedPoints = [];
+const maxRecursionDepth = 5;
 
-rays.forEach(ray => {
-    const intersectInfo = planeObj.intersect(ray.origin, ray.direction)
+const objects = [planeObj, plane2Obj];
+
+for (let i = 0; i < rays.length; i++) {
+    const ray = rays[i];
+
+    if (ray.recursionDepth >= maxRecursionDepth) { continue; }
+
+    const intersectInfo = getNearestIntersection(objects, ray);
     if (intersectInfo.intersect) {
-        ray.setLength(intersectInfo.t0);
+        ray.setLength(intersectInfo.t);
         const pos = {
-            x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
-            y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
-            z: ray.origin.z + intersectInfo.t0 * ray.direction.z,
+            x: ray.origin.x + intersectInfo.t * ray.direction.x,
+            y: ray.origin.y + intersectInfo.t * ray.direction.y,
+            z: ray.origin.z + intersectInfo.t * ray.direction.z,
         };
 
         const dotGeometry = new Geometry();
@@ -164,48 +190,18 @@ rays.forEach(ray => {
         scene.add(dot);
 
         const reflectedRayDirection = new Vector3().copy(ray.direction);
-        reflectedRayDirection.reflect(planeObj.getNormal(pos))
+        reflectedRayDirection.reflect(intersectInfo.intersectedObject.getNormal(pos))
 
-        reflectedRays.push(new Ray(intersectPos, reflectedRayDirection));
-        normalsRays.push(new Ray(intersectPos, planeObj.getNormal(pos)));
+        rays.push(new Ray(intersectPos, reflectedRayDirection, ray.recursionDepth + 1));
+        normalsRays.push(new Ray(intersectPos, intersectInfo.intersectedObject.getNormal(pos)));
     }
-});
-
-reflectedRays.forEach(ray => {
-    const intersectInfo = plane2Obj.intersect(ray.origin, ray.direction)
-    if (intersectInfo.intersect) {
-        ray.setLength(intersectInfo.t0);
-        const pos = {
-            x: ray.origin.x + intersectInfo.t0 * ray.direction.x,
-            y: ray.origin.y + intersectInfo.t0 * ray.direction.y,
-            z: ray.origin.z + intersectInfo.t0 * ray.direction.z,
-        };
-
-        const dotGeometry = new Geometry();
-        const intersectPos = new Vector3(pos.x, pos.y, pos.z);
-        dotGeometry.vertices.push(intersectPos);
-        const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
-        const dot = new Points(dotGeometry, dotMaterial);
-        scene.add(dot);
-
-        const reflectedRayDirection = new Vector3().copy(ray.direction);
-        reflectedRayDirection.reflect(plane2Obj.getNormal(pos))
-
-        reflectedRays.push(new Ray(intersectPos, reflectedRayDirection));
-        normalsRays.push(new Ray(intersectPos, plane2Obj.getNormal(pos)));
-    }
-});
+}
 
 rays.forEach(x => raysPoints.push(...x.getPoints()))
 normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
-reflectedRays.forEach(x => reflectedPoints.push(...x.getPoints()))
 
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, rayMaterial); // //drawing separated lines
-
-const refGeometry = new BufferGeometry().setFromPoints(reflectedPoints);
-const refMaterial = new LineBasicMaterial({ color: 0x00f5ff });
-const reflections = new LineSegments(refGeometry, refMaterial); // //drawing separated lines
 
 const normalsRaysGeometry = new BufferGeometry().setFromPoints(normalsPoints);
 const normalsMaterial = new LineBasicMaterial({ color: 0xffff00 });
@@ -213,7 +209,7 @@ const normalsLines = new LineSegments(normalsRaysGeometry, normalsMaterial); // 
 
 scene.add(lines);
 scene.add(normalsLines);
-scene.add(reflections);
+// scene.add(reflections);
 
 renderer.domElement.addEventListener('mousemove', onMouseMove);
 

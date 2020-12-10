@@ -2,10 +2,11 @@ import { Vector3 } from "three";
 import { normalized } from "./utils/math";
 
 class Ray {
-    constructor(origin, direction) {
+    constructor(origin, direction, recursionDepth = 0) {
         this.origin = origin;
         this.direction = normalized(direction);
         this.length = 100;
+        this.recursionDepth = recursionDepth;
     }
 
     getPoints(rayLength) {
