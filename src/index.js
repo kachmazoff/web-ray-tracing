@@ -3,7 +3,7 @@ import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Ray } from "./Ray";
 import { Sphere } from "./Sphere";
-import { generateRays } from "./Rays";
+import { generateRays, generateRaysCircleStroke } from "./Rays";
 import { Plane } from "./Plane";
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
@@ -146,8 +146,7 @@ scene.add(planeObj.getMesh())
 const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -1 });
 scene.add(plane2Obj.getMesh())
 
-const raysRaduis = 5;
-const rays = generateRays(raysRaduis, 200, new Vector3(20, 0, -10), new Vector3(-1, 0, 0));
+const rays = generateRaysCircleStroke(7.95, 200, new Vector3(20, 0, 0), new Vector3(-1, 0, 0));
 const normalsRays = [];
 
 const raysPoints = [];

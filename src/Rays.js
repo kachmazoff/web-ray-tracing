@@ -7,14 +7,30 @@ function generateRays(radius, raysCount, center, commonDirection) {
         const randomPoint = new Vector3().random();
         randomPoint.x = 0;
         randomPoint.normalize();
-        
+
         randomPoint.y *= (Math.random() * 2 - 1) * radius;
         randomPoint.z *= (Math.random() * 2 - 1) * radius;
-    
+
         rays.push(new Ray(randomPoint.add(center), commonDirection));
     }
 
     return rays;
 }
 
-export { generateRays }
+function generateRaysCircleStroke(radius, raysCount, center, commonDirection) {
+    const rays = [];
+    for (let i = 0; i < raysCount; i++) {
+        const randomPoint = new Vector3().random();
+        randomPoint.x = 0;
+        randomPoint.normalize();
+
+        randomPoint.y *= Math.random() > 0.5 ? radius : -radius;
+        randomPoint.z *= Math.random() > 0.5 ? radius : -radius;
+
+        rays.push(new Ray(randomPoint.add(center), commonDirection));
+    }
+
+    return rays;
+}
+
+export { generateRays, generateRaysCircleStroke }
