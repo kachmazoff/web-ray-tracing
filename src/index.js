@@ -131,7 +131,7 @@ function onMouseMove(event) {
     }
 }
 
-const planeObj = new Plane({ x: 1, y: 1, z: 1 }, { x: 1, y: -2, z: 1 });
+const planeObj = new Plane(new Vector3(-3, 0, 0), { x: 1, y: 1, z: 1 }, { x: 1, y: -2, z: 1 });
 scene.add(planeObj.getMesh())
 
 const raysRaduis = 5;
