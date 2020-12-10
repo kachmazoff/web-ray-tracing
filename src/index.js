@@ -3,7 +3,6 @@ import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Ray } from "./Ray";
 import { Sphere } from "./Sphere";
-import { vectorMinus } from "./utils/math";
 import { generateRays } from "./Rays";
 import { Plane } from "./Plane";
 const WIDTH = window.innerWidth;
@@ -132,17 +131,8 @@ function onMouseMove(event) {
     }
 }
 
-const planeWidth = 20.0;
-const planeHeight = 20.0;
-const planeGeometry = new PlaneBufferGeometry(planeWidth, planeHeight, 1, 1);
-const planeMaterial = new MeshBasicMaterial({ color: '#7d848a', side: DoubleSide });
-// const planeMaterial = new MeshLambertMaterial( {color: '#7d848a', side: DoubleSide} );
-const plane = new Mesh(planeGeometry, planeMaterial);
-plane.rotateY(Math.PI / 2)
-plane.rotateX(-Math.PI / 4)
-scene.add(plane)
-
-const planeObj = new Plane({ x: 1, y: 1, z: 0 }, { x: 0, y: 0, z: -1 });
+const planeObj = new Plane({ x: 1, y: 1, z: 1 }, { x: 1, y: -2, z: 1 });
+scene.add(planeObj.getMesh())
 
 const raysRaduis = 5;
 const rays = generateRays(raysRaduis, 200);

@@ -1,4 +1,4 @@
-import { Vector3 } from "three";
+import { DoubleSide, Mesh, MeshBasicMaterial, PlaneBufferGeometry, Vector3 } from "three";
 import { normalized } from "./utils/math";
 
 class Plane {
@@ -8,7 +8,14 @@ class Plane {
     }
 
     intersect(rayOrigin, rayDirection) {
-        const t = new Vector3().copy(this.normal).dot(new Vector3().copy(this.radius).sub(rayOrigin)) / new Vector3().copy(this.normal).dot(rayDirection);
+        const b = new Vector3().copy(this.normal).dot(rayDirection);
+        if (-1e-9 < b && b < 1e-9) {
+            return { intersect: false }
+        }
+        const t = new Vector3().copy(this.normal).dot(new Vector3().copy(this.radius).sub(rayOrigin)) / b;
+        if (t < 0) {
+            return { intersect: false }
+        }
         return {
             intersect: true,
             t0: t
@@ -17,6 +24,21 @@ class Plane {
 
     getNormal() {
         return new Vector3().copy(this.normal);
+    }
+
+    getMesh(params) {
+        const color = '#7d848a';
+        const size = 20.0;
+        if (!!params && !!params.color) { color = params.color; }
+        if (!!params && !!params.size) { size = params.size; }
+
+        const planeGeometry = new PlaneBufferGeometry(size, size, 1, 1);
+        const planeMaterial = new MeshBasicMaterial({ color, side: DoubleSide });
+        const plane = new Mesh(planeGeometry, planeMaterial);
+
+        plane.lookAt(new Vector3().copy(this.normal));
+
+        return plane
     }
 }
 
