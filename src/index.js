@@ -1,10 +1,13 @@
-import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments, Vector2, Raycaster } from "three";
+import { Mesh, WebGLRenderer, Scene, PerspectiveCamera, BoxGeometry, MeshLambertMaterial, PointLight, SphereGeometry, GridHelper, Geometry, PointsMaterial, Points, Vector3, LineBasicMaterial, BufferGeometry, LineSegments, Vector2, Raycaster, MeshBasicMaterial, MathUtils } from "three";
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { Ray } from "./Ray";
 import { Sphere } from "./Sphere";
 import { generateRays, generateRaysCircleStroke } from "./Rays";
 import { Plane } from "./Plane";
+import { trace } from "./RayTracer";
+
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 
@@ -70,9 +73,14 @@ function createOrbitControl() {
 }
 
 const controls = createOrbitControl();
+const transformControls = new TransformControls(camera, renderer.domElement);
+transformControls.addEventListener('dragging-changed', function (event) {
+    controls.enabled = !event.value;
+});
 
-const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 5)
-scene.add(sphereObj.getMesh());
+// const sphereObj = new Sphere({ x: 0, y: 0, z: 0 }, 5)
+// const sphereObjMesh = sphereObj.getMesh();
+// scene.add(sphereObjMesh);
 
 const rayMaterial = new LineBasicMaterial({ color: 0x0000ff });
 
@@ -110,87 +118,59 @@ function onMouseMove(event) {
     }
 }
 
-function getNearestIntersection(objects, ray) {
-    let minT = 1e9;
-    let intersect = false;
-    let intersectedObject = undefined;
-
-    objects.forEach(o => {
-        const intersectInfo = o.intersect(ray.origin, ray.direction);
-        if (intersectInfo.intersect && minT > intersectInfo.t0 && intersectInfo.t0 > 1e-9) {
-            minT = intersectInfo.t0;
-            intersect = true;
-            intersectedObject = o;
-        }
-    });
-
-    return {
-        intersect,
-        t: minT,
-        intersectedObject
-    }
-}
-
-// const planeObj = new Plane(new Vector3(-20, 0, -10), { x: 1, y: 0, z: 1 });
-const planeObj = new Plane(new Vector3(-10, 0, 0), { x: 1, y: 0.2, z: 0 });
+const planeObj = new Plane(new Vector3(-20, 0, -10), { x: 1, y: 0, z: 1 });
+// const planeObj = new Plane(new Vector3(-10, 0, 0), { x: 1, y: 0.2, z: 0 });
 scene.add(planeObj.getMesh())
 
-// const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -1 });
-// scene.add(plane2Obj.getMesh())
+const plane2Obj = new Plane(new Vector3(-20, 0, 10), { x: 1, y: 0, z: -1 });
+scene.add(plane2Obj.getMesh())
 
-const rays = generateRaysCircleStroke(4.95, 200, new Vector3(20, 0, 0), new Vector3(-1, 0, 0));
+const rays = generateRaysCircleStroke(4.95, 200, new Vector3(20, 0, -20), new Vector3(-1, 0, 0));
+const reflectedRays = [];
 const normalsRays = [];
 
 const raysPoints = [];
 const normalsPoints = [];
 const maxRecursionDepth = 5;
 
-// const objects = [planeObj, plane2Obj, sphereObj];
-const objects = [planeObj, sphereObj];
+const objects = [planeObj, plane2Obj];
+// const objects = [planeObj, sphereObj];
 
-for (let i = 0; i < rays.length; i++) {
-    const ray = rays[i];
+const intersections = trace(rays, objects, reflectedRays, maxRecursionDepth);
+const intersections2 = trace(reflectedRays, objects, reflectedRays, maxRecursionDepth);
 
-    if (ray.recursionDepth >= maxRecursionDepth) { continue; }
+const dotGeometry = new Geometry();
+const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
 
-    const intersectInfo = getNearestIntersection(objects, ray);
-    if (intersectInfo.intersect) {
-        ray.setLength(intersectInfo.t);
-        const pos = {
-            x: ray.origin.x + intersectInfo.t * ray.direction.x,
-            y: ray.origin.y + intersectInfo.t * ray.direction.y,
-            z: ray.origin.z + intersectInfo.t * ray.direction.z,
-        };
+intersections.forEach(x => { dotGeometry.vertices.push(x); });
+intersections2.forEach(x => { dotGeometry.vertices.push(x); });
 
-        const dotGeometry = new Geometry();
-        const intersectPos = new Vector3(pos.x, pos.y, pos.z);
-        dotGeometry.vertices.push(intersectPos);
-        const dotMaterial = new PointsMaterial({ size: 5, sizeAttenuation: false });
-        const dot = new Points(dotGeometry, dotMaterial);
-        scene.add(dot);
-
-        const reflectedRayDirection = new Vector3().copy(ray.direction);
-        reflectedRayDirection.reflect(intersectInfo.intersectedObject.getNormal(pos))
-
-        rays.push(new Ray(intersectPos, reflectedRayDirection, ray.recursionDepth + 1));
-        normalsRays.push(new Ray(intersectPos, intersectInfo.intersectedObject.getNormal(pos)));
-    }
-}
+const dots = new Points(dotGeometry, dotMaterial);
+scene.add(dots);
 
 rays.forEach(x => raysPoints.push(...x.getPoints()))
-normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
+reflectedRays.forEach(x => raysPoints.push(...x.getPoints()))
+// normalsRays.forEach(x => normalsPoints.push(...x.getPoints(1)))
 
 const raysGeometry = new BufferGeometry().setFromPoints(raysPoints);
 const lines = new LineSegments(raysGeometry, rayMaterial); // //drawing separated lines
 
-const normalsRaysGeometry = new BufferGeometry().setFromPoints(normalsPoints);
-const normalsMaterial = new LineBasicMaterial({ color: 0xffff00 });
-const normalsLines = new LineSegments(normalsRaysGeometry, normalsMaterial); // //drawing separated lines
+// const normalsRaysGeometry = new BufferGeometry().setFromPoints(normalsPoints);
+// const normalsMaterial = new LineBasicMaterial({ color: 0xffff00 });
+// const normalsLines = new LineSegments(normalsRaysGeometry, normalsMaterial); // //drawing separated lines
 
 scene.add(lines);
-scene.add(normalsLines);
+// scene.add(normalsLines);
 
 renderer.domElement.addEventListener('mousemove', onMouseMove);
+
+const cubegeometry = new BoxGeometry(5, 5, 10);
+const cubematerial = new MeshLambertMaterial({ color: 0x00ff00 });
+const cube = new Mesh(cubegeometry, cubematerial);
+scene.add(cube)
+
+transformControls.attach(planeObj.getMesh());
+scene.add(transformControls);
 
 function render() {
     requestAnimationFrame(render);
@@ -198,3 +178,80 @@ function render() {
     controls.update();
 }
 render();
+
+
+window.addEventListener('keydown', function (event) {
+
+    switch (event.keyCode) {
+
+        case 81: // Q
+            transformControls.setSpace(transformControls.space === "local" ? "world" : "local");
+            break;
+
+        case 16: // Shift
+            transformControls.setTranslationSnap(100);
+            transformControls.setRotationSnap(MathUtils.degToRad(15));
+            transformControls.setScaleSnap(0.25);
+            break;
+
+        case 87: // W
+            transformControls.setMode("translate");
+            break;
+
+        case 69: // E
+            transformControls.setMode("rotate");
+            break;
+
+        case 82: // R
+            transformControls.setMode("scale");
+            break;
+
+        case 187:
+        case 107: // +, =, num+
+            transformControls.setSize(transformControls.size + 0.1);
+            break;
+
+        case 189:
+        case 109: // -, _, num-
+            transformControls.setSize(Math.max(transformControls.size - 0.1, 0.1));
+            break;
+
+        case 88: // X
+            transformControls.showX = !transformControls.showX;
+            break;
+
+        case 89: // Y
+            transformControls.showY = !transformControls.showY;
+            break;
+
+        case 90: // Z
+            transformControls.showZ = !transformControls.showZ;
+            break;
+
+        case 32: // Spacebar
+            transformControls.enabled = !transformControls.enabled;
+            break;
+
+    }
+
+});
+
+transformControls.addEventListener('change', event => {
+    console.log("event.target.children[1].mode", event.target.children[1].mode)
+    console.log('new position:', event.target.children[1].object.position)
+    // console.log("event.target.children[1].mode", event.target.children[1].object.position)
+});
+
+window.addEventListener('keyup', function (event) {
+
+    switch (event.keyCode) {
+
+        case 16: // Shift
+            transformControls.setTranslationSnap(null);
+            transformControls.setRotationSnap(null);
+            transformControls.setScaleSnap(null);
+            break;
+
+    }
+
+});

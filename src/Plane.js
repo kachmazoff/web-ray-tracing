@@ -27,6 +27,7 @@ class Plane {
     }
 
     getMesh(params) {
+        if (this.mesh) { return this.mesh; }
         let color = '#7d848a';
         let size = 20.0;
         if (!!params && !!params.color) { color = params.color; }
@@ -38,6 +39,8 @@ class Plane {
 
         plane.lookAt(new Vector3().copy(this.normal));
         plane.position.set(this.position.x, this.position.y, this.position.z);
+
+        this.mesh = plane;
 
         return plane
     }
