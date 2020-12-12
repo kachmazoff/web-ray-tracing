@@ -172,10 +172,10 @@ scene.add(reflectedLines);
 
 renderer.domElement.addEventListener('mousemove', onMouseMove);
 
-const cubegeometry = new BoxGeometry(5, 5, 10);
-const cubematerial = new MeshLambertMaterial({ color: 0x00ff00 });
-const cube = new Mesh(cubegeometry, cubematerial);
-scene.add(cube)
+// const cubegeometry = new BoxGeometry(5, 5, 5);
+// const cubematerial = new MeshLambertMaterial({ color: 0x00ff00 });
+// const cube = new Mesh(cubegeometry, cubematerial);
+// scene.add(cube)
 
 transformControls.attach(planeObj.getMesh());
 scene.add(transformControls);
@@ -245,8 +245,18 @@ window.addEventListener('keydown', function (event) {
 });
 
 transformControls.addEventListener('change', event => {
+    let changed = false;
+    const newNormal = new Vector3(0, 0, 1).applyEuler(event.target.children[1].object.rotation);
+
     if (!event.target.children[1].object.position.equals(planeObj.position)) {
-        planeObj.setPosition(event.target.children[1].object.position)
+        planeObj.setPosition(event.target.children[1].object.position);
+        changed = true;
+    }
+    if (!newNormal.equals(planeObj.normal)) {
+        planeObj.normal = newNormal;
+        changed = true;
+    }
+    if (changed) {
         scene.remove(scene.getObjectByName('Intersects'))
         scene.remove(scene.getObjectByName('ReflectedRays'))
         scene.remove(scene.getObjectByName('PrimaryRays'))
